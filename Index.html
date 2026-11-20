@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daily Phrases & Quick Helper</title>
+  <style>
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+    body {
+      margin: 0;
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 16px;
+    }
+    .app {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #1e293b;
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+    h1 { margin: 0 0 6px; font-size: 22px; color: #38bdf8; }
+    p.sub { margin: 0 0 18px; color: #cbd5e1; font-size: 14px; }
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    button.tab {
+      background: #334155;
+      color: #fff;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button.tab.active { background: #0284c7; font-weight: bold; }
+    .card {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .phrase { font-size: 18px; font-weight: bold; color: #f8fafc; direction: ltr; text-align: left; }
+    .pron { font-size: 13px; color: #94a3b8; margin-top: 4px; direction: ltr; text-align: left; }
+    .meaning { font-size: 15px; color: #4ade80; margin-top: 6px; }
+    .copy-btn {
+      margin-top: 10px;
+      background: #16a34a;
+      color: #fff;
+      border: none;
+      padding: 7px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>روزمرہ جملے اور فوری مدد</h1>
+    <p class="sub">مختلف زبانوں کے عام جملے سیکھیں اور ایک کلک میں کاپی کریں</p>
+
+    <div class="tabs" id="tabs"></div>
+    <div id="list"></div>
+
+    <div class="footer">Daily Phrases & Quick Helper • Free Web App</div>
+  </div>
+
+  <script>
+    const data = {
+      "English": [
+        { p: "Hello! How are you?", pr: "ہیلو! ہاؤ آر یو؟", m: "سلام! آپ کیسے ہیں؟" },
+        { p: "Thank you very much.", pr: "تھینک یو ویری مچ", m: "آپ کا بہت شکریہ۔" },
+        { p: "Where is this place?", pr: "وئیر از دس پلیس؟", m: "یہ جگہ کہاں ہے؟" }
+      ],
+      "Russian": [
+        { p: "Привет! Как дела?", pr: "پریویت! کاک دیلا؟", m: "ہیلو! کیا حال ہے؟" },
+        { p: "Спасибо большое.", pr: "سپاسیبا بالشوئے", m: "بہت شکریہ۔" },
+        { p: "Я не понимаю.", pr: "یا نی پنیمایو", m: "مجھے سمجھ نہیں آیا۔" }
+      ],
+      "German": [
+        { p: "Hallo! Wie geht es dir?", pr: "ہالو! وی گیت ایس دیر؟", m: "ہیلو! آپ کیسے ہیں؟" },
+        { p: "Vielen Dank.", pr: "فیلن ڈانک", m: "بہت شکریہ۔" },
+        { p: "Wo ist der Bahnhof?", pr: "وو اسٹس ڈیر بان ہوف؟", m: "اسٹیشن کہاں ہے؟" }
+      ],
+      "French": [
+        { p: "Bonjour! Comment ça va?", pr: "بونژور! کوموں سا وا؟", m: "صبح بخیر! کیسے ہو؟" },
+        { p: "Merci beaucoup.", pr: "میرسی بوکو", m: "بہت شکریہ۔" },
+        { p: "Je ne sais pas.", pr: "ژو نو سی پا", m: "مجھے نہیں معلوم۔" }
+      ],
+      "Chinese": [
+        { p: "你好！(Nǐ hǎo!)", pr: "نی ہاؤ!", m: "سلام / ہیلو!" },
+        { p: "谢谢！(Xièxie!)", pr: "شیہ شیہ!", m: "شکریہ!" },
+        { p: "多少钱？(Duōshao qián?)", pr: "توا شاؤ چیئن؟", m: "یہ کتنے کا ہے؟" }
+      ]
+    };
+
+    const tabsEl = document.getElementById("tabs");
+    const listEl = document.getElementById("list");
+    const langs = Object.keys(data);
+    let current = langs[0];
+
+    function renderTabs() {
+      tabsEl.innerHTML = "";
+      langs.forEach(lang => {
+        const btn = document.createElement("button");
+        btn.className = "tab" + (lang === current ? " active" : "");
+        btn.textContent = lang;
+        btn.onclick = () => { current = lang; renderTabs(); renderList(); };
+        tabsEl.appendChild(btn);
+      });
+    }
+
+    function renderList() {
+      listEl.innerHTML = "";
+      data[current].forEach(item => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="phrase">${item.p}</div>
+          <div class="pron">تلفظ: ${item.pr}</div>
+          <div class="meaning">${item.m}</div>
+          <button class="copy-btn" onclick="copyText('${item.p.replace(/'/g, "\\'")}', this)">کاپی کریں</button>
+        `;
+        listEl.appendChild(card);
+      });
+    }
+
+    function copyText(txt, btn) {
+      navigator.clipboard.writeText(txt);
+      const old = btn.textContent;
+      btn.textContent = "کاپی ہو گیا ✓";
+      setTimeout(() => btn.textContent = old, 1500);
+    }
+
+    renderTabs();
+    renderList();
+  </script>
+</body>
+</html>
